@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'recapitulatif_screen.dart';
+import 'package:snack_runner/data/app_data.dart';
+import 'package:snack_runner/models/course.dart';
+import 'package:snack_runner/screens/recapitulatif_screen.dart';
 
 class NouvelleCourseScreen extends StatefulWidget {
   const NouvelleCourseScreen({super.key});
@@ -9,8 +11,78 @@ class NouvelleCourseScreen extends StatefulWidget {
 }
 
 class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController pickupController = TextEditingController();
+  final TextEditingController deliveryController = TextEditingController();
+  final TextEditingController rewardController = TextEditingController();
   String typeSelectionne = 'Cafétéria';
   String recompenseType = 'Argent';
+  bool _isLoading = false;
+  String? _descriptionError;
+  String? _pickupError;
+  String? _deliveryError;
+  String? _rewardError;
+
+  bool _validate() {
+    setState(() {
+      _descriptionError = descriptionController.text.trim().isEmpty
+          ? 'Description requise'
+          : null;
+      _pickupError = pickupController.text.trim().isEmpty
+          ? 'Lieu de retrait requis'
+          : null;
+      _deliveryError = deliveryController.text.trim().isEmpty
+          ? 'Lieu de livraison requis'
+          : null;
+      if (recompenseType == 'Argent') {
+        _rewardError = rewardController.text.trim().isEmpty
+            ? 'Montant requis'
+            : double.tryParse(rewardController.text.trim()) == null
+            ? 'Montant invalide'
+            : null;
+      }
+    });
+    return _descriptionError == null &&
+        _pickupError == null &&
+        _deliveryError == null &&
+        _rewardError == null;
+  }
+
+  @override
+  void dispose() {
+    descriptionController.dispose();
+    pickupController.dispose();
+    deliveryController.dispose();
+    rewardController.dispose();
+    super.dispose();
+  }
+
+  Course _buildCourse() {
+    final requester = AppData.instance.currentUser.value;
+    final rewardValue = double.tryParse(rewardController.text.trim()) ?? 500;
+    final title = descriptionController.text.trim().isNotEmpty
+        ? descriptionController.text.trim()
+        : '$typeSelectionne rapide';
+
+    return Course(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      category: typeSelectionne,
+      title: title,
+      pickupLocation: pickupController.text.trim().isNotEmpty
+          ? pickupController.text.trim()
+          : typeSelectionne == 'Cafétéria'
+          ? 'Cafét RU B'
+          : 'Bureau des étudiants',
+      deliveryLocation: deliveryController.text.trim().isNotEmpty
+          ? deliveryController.text.trim()
+          : 'Amphi 3, Bâtiment B',
+      reward: rewardValue,
+      rewardType: recompenseType,
+      status: CourseStatus.waiting,
+      requesterName: requester,
+      runnerName: '',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +91,6 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Row(
@@ -46,7 +117,6 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                 ],
               ),
             ),
-
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -54,8 +124,6 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 8),
-
-                    // Type de course
                     const Text(
                       'TYPE DE COURSE',
                       style: TextStyle(
@@ -104,8 +172,6 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       }).toList(),
                     ),
                     const SizedBox(height: 20),
-
-                    // Description
                     const Text(
                       'DÉCRIS TA COMMANDE',
                       style: TextStyle(
@@ -117,6 +183,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
+                      controller: descriptionController,
                       maxLines: 3,
                       decoration: InputDecoration(
                         hintText: 'Ex : 2 sandwichs poulet, 1 jus d\'orange...',
@@ -125,17 +192,68 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                           fontSize: 13,
                         ),
                         filled: true,
-                        fillColor: const Color(0xFFF1F5F9),
+                        fillColor: _descriptionError != null
+                            ? const Color(0xFFFFEBEE)
+                            : const Color(0xFFF1F5F9),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
+                          borderSide: _descriptionError != null
+                              ? const BorderSide(color: Colors.red, width: 1.5)
+                              : BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.all(16),
                       ),
                     ),
+                    if (_descriptionError != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _descriptionError!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
                     const SizedBox(height: 20),
-
-                    // Lieu de livraison
+                    const Text(
+                      'LIEU DE RETRAIT',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF94A3B8),
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: pickupController,
+                      decoration: InputDecoration(
+                        hintText: 'Ex : Cafét RU B',
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 13,
+                        ),
+                        filled: true,
+                        fillColor: _pickupError != null
+                            ? const Color(0xFFFFEBEE)
+                            : const Color(0xFFF1F5F9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: _pickupError != null
+                              ? const BorderSide(color: Colors.red, width: 1.5)
+                              : BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                      ),
+                    ),
+                    if (_pickupError != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _pickupError!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
                     const Text(
                       'LIEU DE LIVRAISON',
                       style: TextStyle(
@@ -147,6 +265,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
+                      controller: deliveryController,
                       decoration: InputDecoration(
                         hintText: 'Ex : Amphi 3, Bâtiment B',
                         hintStyle: const TextStyle(
@@ -154,10 +273,14 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                           fontSize: 13,
                         ),
                         filled: true,
-                        fillColor: const Color(0xFFF1F5F9),
+                        fillColor: _deliveryError != null
+                            ? const Color(0xFFFFEBEE)
+                            : const Color(0xFFF1F5F9),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(50),
-                          borderSide: BorderSide.none,
+                          borderSide: _deliveryError != null
+                              ? const BorderSide(color: Colors.red, width: 1.5)
+                              : BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -165,9 +288,14 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                         ),
                       ),
                     ),
+                    if (_deliveryError != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _deliveryError!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
                     const SizedBox(height: 20),
-
-                    // Type de récompense
                     const Text(
                       'TYPE DE RÉCOMPENSE',
                       style: TextStyle(
@@ -216,51 +344,84 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-
-                    // Montant
                     if (recompenseType == 'Argent')
-                      TextField(
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          hintText: '500',
-                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                          filled: true,
-                          fillColor: const Color(0xFFF1F5F9),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                            borderSide: BorderSide.none,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: rewardController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              hintText: '500',
+                              hintStyle: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                              ),
+                              filled: true,
+                              fillColor: _rewardError != null
+                                  ? const Color(0xFFFFEBEE)
+                                  : const Color(0xFFF1F5F9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide: _rewardError != null
+                                    ? const BorderSide(
+                                        color: Colors.red,
+                                        width: 1.5,
+                                      )
+                                    : BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              suffixText: 'FCFA',
+                              suffixStyle: const TextStyle(
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          suffixText: 'FCFA',
-                          suffixStyle: const TextStyle(
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                          if (_rewardError != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _rewardError!,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     const SizedBox(height: 32),
                   ],
                 ),
               ),
             ),
-
-            // CTA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RecapitulatifScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          if (!_validate()) return;
+                          setState(() => _isLoading = true);
+                          await Future.delayed(
+                            const Duration(milliseconds: 600),
+                          );
+                          if (mounted) {
+                            final course = _buildCourse();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    RecapitulatifScreen(course: course),
+                              ),
+                            );
+                            setState(() => _isLoading = false);
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1A6B4A),
                     foregroundColor: Colors.white,
@@ -269,10 +430,24 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
-                  child: const Text(
-                    'Voir le récapitulatif →',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Voir le récapitulatif →',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ),

@@ -18,7 +18,12 @@ class SnackRunnerApp extends StatelessWidget {
         fontFamily: 'Inter',
         useMaterial3: true,
       ),
-      home: const LoginScreen(),
+      home: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 412),
+          child: const LoginScreen(),
+        ),
+      ),
     );
   }
 }
