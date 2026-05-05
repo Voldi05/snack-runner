@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:snack_runner/models/course.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -11,7 +12,7 @@ class CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppColors.bg2,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -20,7 +21,7 @@ class CourseCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: AppColors.border, width: 0.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +33,7 @@ class CourseCard extends StatelessWidget {
                     course.category,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF94A3B8),
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -42,7 +43,7 @@ class CourseCard extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: course.status.color.withValues(alpha: 0.12),
+                      color: course.status.badgeBackground,
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: Text(
@@ -50,7 +51,7 @@ class CourseCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: course.status.color,
+                        color: course.status.badgeText,
                       ),
                     ),
                   ),
@@ -62,18 +63,24 @@ class CourseCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1E293B),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Retrait: ${course.pickupLocation}',
-                style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Livraison: ${course.deliveryLocation}',
-                style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -83,7 +90,7 @@ class CourseCard extends StatelessWidget {
                     'Par ${course.requesterName}',
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   Text(
@@ -91,7 +98,7 @@ class CourseCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A6B4A),
+                      color: AppColors.amberText,
                     ),
                   ),
                 ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class InscriptionScreen extends StatefulWidget {
   const InscriptionScreen({super.key});
@@ -45,7 +46,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -57,29 +58,29 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Rejoins SnackRunner pour publier ou accepter des courses.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 32),
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
                   hintText: 'Nom',
-                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                  hintStyle: const TextStyle(color: AppColors.textHint),
                   filled: true,
                   fillColor: _nameError != null
-                      ? const Color(0xFFFFEBEE)
-                      : const Color(0xFFF1F5F9),
+                      ? AppColors.danger.withValues(alpha: 0.1)
+                      : AppColors.bg4,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50),
                     borderSide: _nameError != null
-                        ? const BorderSide(color: Colors.red, width: 1.5)
+                        ? const BorderSide(color: AppColors.danger, width: 1.5)
                         : BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(
@@ -100,15 +101,15 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                 controller: emailController,
                 decoration: InputDecoration(
                   hintText: 'Email universitaire',
-                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                  hintStyle: const TextStyle(color: AppColors.textHint),
                   filled: true,
                   fillColor: _emailError != null
-                      ? const Color(0xFFFFEBEE)
-                      : const Color(0xFFF1F5F9),
+                      ? AppColors.danger.withValues(alpha: 0.1)
+                      : AppColors.bg4,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50),
                     borderSide: _emailError != null
-                        ? const BorderSide(color: Colors.red, width: 1.5)
+                        ? const BorderSide(color: AppColors.danger, width: 1.5)
                         : BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(
@@ -130,7 +131,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF94A3B8),
+                  color: AppColors.textHint,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -145,14 +146,12 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: selected
-                              ? const Color(0xFF1A6B4A)
-                              : Colors.white,
+                          color: selected ? AppColors.amber : AppColors.white,
                           borderRadius: BorderRadius.circular(50),
                           border: Border.all(
                             color: selected
-                                ? const Color(0xFF1A6B4A)
-                                : const Color(0xFFE2E8F0),
+                                ? AppColors.amber
+                                : AppColors.border,
                             width: 1.5,
                           ),
                         ),
@@ -163,8 +162,8 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             color: selected
-                                ? Colors.white
-                                : const Color(0xFF64748B),
+                                ? AppColors.white
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -178,15 +177,15 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Mot de passe',
-                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                  hintStyle: const TextStyle(color: AppColors.textHint),
                   filled: true,
                   fillColor: _passwordError != null
-                      ? const Color(0xFFFFEBEE)
-                      : const Color(0xFFF1F5F9),
+                      ? AppColors.danger.withValues(alpha: 0.1)
+                      : AppColors.bg4,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50),
                     borderSide: _passwordError != null
-                        ? const BorderSide(color: Colors.red, width: 1.5)
+                        ? const BorderSide(color: AppColors.danger, width: 1.5)
                         : BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(
@@ -217,12 +216,13 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                           if (mounted) {
                             final name = nameController.text.trim();
                             AppData.instance.setCurrentUser(name);
+                            // ignore: use_build_context_synchronously
                             Navigator.pop(context);
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A6B4A),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.amber,
+                    foregroundColor: AppColors.black,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),

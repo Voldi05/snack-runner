@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 enum CourseStatus { waiting, accepted, delivering, completed }
 
@@ -16,16 +17,29 @@ extension CourseStatusX on CourseStatus {
     }
   }
 
-  Color get color {
+  Color get badgeBackground {
     switch (this) {
       case CourseStatus.waiting:
-        return const Color(0xFF64748B);
+        return AppColors.statusWaitingBg;
       case CourseStatus.accepted:
-        return const Color(0xFF1A6B4A);
+        return AppColors.statusAcceptedBg;
       case CourseStatus.delivering:
-        return const Color(0xFF2563EB);
+        return AppColors.statusDeliveringBg;
       case CourseStatus.completed:
-        return const Color(0xFF0F766E);
+        return AppColors.statusCompletedBg;
+    }
+  }
+
+  Color get badgeText {
+    switch (this) {
+      case CourseStatus.waiting:
+        return AppColors.statusWaitingText;
+      case CourseStatus.accepted:
+        return AppColors.statusAcceptedText;
+      case CourseStatus.delivering:
+        return AppColors.statusDeliveringText;
+      case CourseStatus.completed:
+        return AppColors.statusCompletedText;
     }
   }
 }

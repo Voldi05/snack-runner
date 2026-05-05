@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/suivi_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class RecapitulatifScreen extends StatefulWidget {
   final Course course;
@@ -27,7 +28,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       body: SafeArea(
         child: Column(
           children: [
@@ -39,7 +40,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
-                      color: Color(0xFF1E293B),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const Expanded(
@@ -49,7 +50,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -65,12 +66,12 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                     const SizedBox(height: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.bg3,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: AppColors.border),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: AppColors.black.withValues(alpha: 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -97,7 +98,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                                       item['label']!,
                                       style: const TextStyle(
                                         fontSize: 13,
-                                        color: Color(0xFF64748B),
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
                                     Flexible(
@@ -108,8 +109,8 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
                                           color: isReward
-                                              ? const Color(0xFF1A6B4A)
-                                              : const Color(0xFF1E293B),
+                                              ? AppColors.amber
+                                              : AppColors.textPrimary,
                                         ),
                                       ),
                                     ),
@@ -119,7 +120,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                               if (!isLast)
                                 const Divider(
                                   height: 1,
-                                  color: Color(0xFFE2E8F0),
+                                  color: AppColors.border,
                                 ),
                             ],
                           );
@@ -130,7 +131,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE6F4EF),
+                        color: AppColors.bg4,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -138,7 +139,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                         children: const [
                           Icon(
                             Icons.info_outline,
-                            color: Color(0xFF1A6B4A),
+                            color: AppColors.amber,
                             size: 20,
                           ),
                           SizedBox(width: 10),
@@ -147,7 +148,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                               'Une fois publiée, ta course sera visible par les runners proches de toi.',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF1A6B4A),
+                                color: AppColors.amber,
                                 height: 1.5,
                               ),
                             ),
@@ -178,6 +179,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                                 if (!appData.isPublished(widget.course.id)) {
                                   appData.publishCourse(widget.course);
                                 }
+                                // ignore: use_build_context_synchronously
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
@@ -188,8 +190,8 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A6B4A),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.amber,
+                        foregroundColor: AppColors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
@@ -201,7 +203,7 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                                  AppColors.white,
                                 ),
                                 strokeWidth: 2,
                               ),
@@ -223,9 +225,9 @@ class _RecapitulatifScreenState extends State<RecapitulatifScreen> {
                           ? null
                           : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF1A6B4A),
+                        foregroundColor: AppColors.amber,
                         side: const BorderSide(
-                          color: Color(0xFF1A6B4A),
+                          color: AppColors.amber,
                           width: 1.5,
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),

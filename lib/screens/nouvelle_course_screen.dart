@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/recapitulatif_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class NouvelleCourseScreen extends StatefulWidget {
   const NouvelleCourseScreen({super.key});
@@ -87,7 +88,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       body: SafeArea(
         child: Column(
           children: [
@@ -99,7 +100,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
-                      color: Color(0xFF1E293B),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const Expanded(
@@ -109,7 +110,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -129,7 +130,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
+                        color: AppColors.textHint,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -145,13 +146,13 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? const Color(0xFF1A6B4A)
-                                    : Colors.white,
+                                    ? AppColors.amber
+                                    : AppColors.white,
                                 borderRadius: BorderRadius.circular(50),
                                 border: Border.all(
                                   color: selected
-                                      ? const Color(0xFF1A6B4A)
-                                      : const Color(0xFFE2E8F0),
+                                      ? AppColors.amber
+                                      : AppColors.border,
                                   width: 1.5,
                                 ),
                               ),
@@ -162,8 +163,8 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: selected
-                                      ? Colors.white
-                                      : const Color(0xFF64748B),
+                                      ? AppColors.white
+                                      : AppColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -177,7 +178,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
+                        color: AppColors.textHint,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -188,13 +189,13 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       decoration: InputDecoration(
                         hintText: 'Ex : 2 sandwichs poulet, 1 jus d\'orange...',
                         hintStyle: const TextStyle(
-                          color: Color(0xFF94A3B8),
+                          color: AppColors.textHint,
                           fontSize: 13,
                         ),
                         filled: true,
                         fillColor: _descriptionError != null
-                            ? const Color(0xFFFFEBEE)
-                            : const Color(0xFFF1F5F9),
+                            ? AppColors.danger.withValues(alpha: 0.1)
+                            : AppColors.bg4,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: _descriptionError != null
@@ -217,7 +218,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
+                        color: AppColors.textHint,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -227,13 +228,13 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       decoration: InputDecoration(
                         hintText: 'Ex : Cafét RU B',
                         hintStyle: const TextStyle(
-                          color: Color(0xFF94A3B8),
+                          color: AppColors.textHint,
                           fontSize: 13,
                         ),
                         filled: true,
                         fillColor: _pickupError != null
-                            ? const Color(0xFFFFEBEE)
-                            : const Color(0xFFF1F5F9),
+                            ? AppColors.danger.withValues(alpha: 0.1)
+                            : AppColors.bg4,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(50),
                           borderSide: _pickupError != null
@@ -259,7 +260,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
+                        color: AppColors.textHint,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -269,13 +270,13 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       decoration: InputDecoration(
                         hintText: 'Ex : Amphi 3, Bâtiment B',
                         hintStyle: const TextStyle(
-                          color: Color(0xFF94A3B8),
+                          color: AppColors.textHint,
                           fontSize: 13,
                         ),
                         filled: true,
                         fillColor: _deliveryError != null
-                            ? const Color(0xFFFFEBEE)
-                            : const Color(0xFFF1F5F9),
+                            ? AppColors.danger.withValues(alpha: 0.1)
+                            : AppColors.bg4,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(50),
                           borderSide: _deliveryError != null
@@ -301,7 +302,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
+                        color: AppColors.textHint,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -317,13 +318,13 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? const Color(0xFF1A6B4A)
-                                    : Colors.white,
+                                    ? AppColors.amber
+                                    : AppColors.white,
                                 borderRadius: BorderRadius.circular(50),
                                 border: Border.all(
                                   color: selected
-                                      ? const Color(0xFF1A6B4A)
-                                      : const Color(0xFFE2E8F0),
+                                      ? AppColors.amber
+                                      : AppColors.border,
                                   width: 1.5,
                                 ),
                               ),
@@ -334,8 +335,8 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: selected
-                                      ? Colors.white
-                                      : const Color(0xFF64748B),
+                                      ? AppColors.white
+                                      : AppColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -354,17 +355,17 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                             decoration: InputDecoration(
                               hintText: '500',
                               hintStyle: const TextStyle(
-                                color: Color(0xFF94A3B8),
+                                color: AppColors.textHint,
                               ),
                               filled: true,
                               fillColor: _rewardError != null
-                                  ? const Color(0xFFFFEBEE)
-                                  : const Color(0xFFF1F5F9),
+                                  ? AppColors.danger.withValues(alpha: 0.1)
+                                  : AppColors.bg4,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(50),
                                 borderSide: _rewardError != null
                                     ? const BorderSide(
-                                        color: Colors.red,
+                                        color: AppColors.danger,
                                         width: 1.5,
                                       )
                                     : BorderSide.none,
@@ -375,7 +376,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                               ),
                               suffixText: 'FCFA',
                               suffixStyle: const TextStyle(
-                                color: Color(0xFF64748B),
+                                color: AppColors.textSecondary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -385,7 +386,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                             Text(
                               _rewardError!,
                               style: const TextStyle(
-                                color: Colors.red,
+                                color: AppColors.danger,
                                 fontSize: 12,
                               ),
                             ),
@@ -412,6 +413,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                           );
                           if (mounted) {
                             final course = _buildCourse();
+                            // ignore: use_build_context_synchronously
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -423,8 +425,8 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A6B4A),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.amber,
+                    foregroundColor: AppColors.black,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
@@ -436,7 +438,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                              AppColors.white,
                             ),
                             strokeWidth: 2,
                           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/dashboard_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class FinMissionScreen extends StatefulWidget {
   final String courseId;
@@ -20,10 +21,10 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
     final appData = AppData.instance;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.bg0,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: const Text('Fin de mission'),
       ),
@@ -48,7 +49,7 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -56,14 +57,14 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
                   course.title,
                   style: const TextStyle(
                     fontSize: 16,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE6F4EF),
+                    color: AppColors.bg4,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -73,7 +74,7 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
                         'Récompense',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -82,7 +83,7 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A6B4A),
+                          color: AppColors.amber,
                         ),
                       ),
                     ],
@@ -103,6 +104,7 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
                               if (!isCompleted) {
                                 appData.completeCourse(course.id);
                               }
+                              // ignore: use_build_context_synchronously
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
@@ -113,8 +115,8 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A6B4A),
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.amber,
+                      foregroundColor: AppColors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),
@@ -126,7 +128,7 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                                AppColors.white,
                               ),
                               strokeWidth: 2,
                             ),

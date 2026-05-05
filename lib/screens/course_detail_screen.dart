@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/mission_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final Course course;
@@ -20,10 +21,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     final appData = AppData.instance;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.bg0,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: const Text('Détails de la course'),
       ),
@@ -48,7 +49,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -56,7 +57,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   '${currentCourse.category} • ${currentCourse.rewardLabel}',
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -86,7 +87,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                                 const Duration(milliseconds: 600),
                               );
                               if (mounted) {
+                                // ignore: use_build_context_synchronously
                                 appData.acceptCourse(currentCourse.id);
+                                // ignore: use_build_context_synchronously
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -98,8 +101,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A6B4A),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.amber,
+                        foregroundColor: AppColors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
@@ -111,7 +114,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                                  AppColors.white,
                                 ),
                                 strokeWidth: 2,
                               ),
@@ -140,6 +143,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               );
                               if (mounted) {
                                 setState(() => _isLoading = false);
+                                // ignore: use_build_context_synchronously
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -151,9 +155,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               }
                             },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF1A6B4A),
+                        foregroundColor: AppColors.amber,
                         side: const BorderSide(
-                          color: Color(0xFF1A6B4A),
+                          color: AppColors.amber,
                           width: 1.5,
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -167,7 +171,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color(0xFF1A6B4A),
+                                  AppColors.amber,
                                 ),
                                 strokeWidth: 2,
                               ),
@@ -209,7 +213,7 @@ class _DetailRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF94A3B8),
+                color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -219,7 +223,7 @@ class _DetailRow extends StatelessWidget {
               value,
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF1E293B),
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/fin_mission_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class MissionScreen extends StatefulWidget {
   final String courseId;
@@ -20,10 +21,10 @@ class _MissionScreenState extends State<MissionScreen> {
     final appData = AppData.instance;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.bg0,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: const Text('Mission'),
       ),
@@ -50,7 +51,7 @@ class _MissionScreenState extends State<MissionScreen> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -58,7 +59,7 @@ class _MissionScreenState extends State<MissionScreen> {
                   course.rewardLabel,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -71,7 +72,10 @@ class _MissionScreenState extends State<MissionScreen> {
                 if (!isRunner)
                   const Text(
                     'Tu n es pas le runner de cette course.',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 if (canStart)
                   SizedBox(
@@ -90,8 +94,8 @@ class _MissionScreenState extends State<MissionScreen> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A6B4A),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.amber,
+                        foregroundColor: AppColors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
@@ -103,7 +107,7 @@ class _MissionScreenState extends State<MissionScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                                  AppColors.white,
                                 ),
                                 strokeWidth: 2,
                               ),
@@ -130,6 +134,7 @@ class _MissionScreenState extends State<MissionScreen> {
                               );
                               if (mounted) {
                                 setState(() => _isLoading = false);
+                                // ignore: use_build_context_synchronously
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -140,8 +145,8 @@ class _MissionScreenState extends State<MissionScreen> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A6B4A),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.amber,
+                        foregroundColor: AppColors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
@@ -153,7 +158,7 @@ class _MissionScreenState extends State<MissionScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                                  AppColors.white,
                                 ),
                                 strokeWidth: 2,
                               ),
@@ -195,7 +200,7 @@ class _InfoRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF94A3B8),
+                color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -205,7 +210,7 @@ class _InfoRow extends StatelessWidget {
               value,
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF1E293B),
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w500,
               ),
             ),

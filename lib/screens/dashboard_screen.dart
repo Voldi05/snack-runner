@@ -3,6 +3,7 @@ import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/courses_screen.dart';
 import 'package:snack_runner/screens/nouvelle_course_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -12,7 +13,7 @@ class DashboardScreen extends StatelessWidget {
     final appData = AppData.instance;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       body: SafeArea(
         child: ValueListenableBuilder<String>(
           valueListenable: appData.currentUser,
@@ -52,14 +53,14 @@ class DashboardScreen extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1E293B),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           Container(
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE6F4EF),
+                              color: AppColors.bg3,
                               borderRadius: BorderRadius.circular(50),
                             ),
                             child: Center(
@@ -68,7 +69,7 @@ class DashboardScreen extends StatelessWidget {
                                     ? currentUser[0].toUpperCase()
                                     : 'U',
                                 style: const TextStyle(
-                                  color: Color(0xFF1A6B4A),
+                                  color: AppColors.amber,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
@@ -89,21 +90,24 @@ class DashboardScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
-                                color: Color(0xFF94A3B8),
+                                color: AppColors.textSecondary,
                                 letterSpacing: 1.2,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.bg2,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: const Color(0xFFE2E8F0),
+                                  color: AppColors.border,
+                                  width: 0.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
+                                    color: AppColors.black.withValues(
+                                      alpha: 0.05,
+                                    ),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -115,7 +119,7 @@ class DashboardScreen extends StatelessWidget {
                                     Container(
                                       width: 4,
                                       decoration: const BoxDecoration(
-                                        color: Color(0xFF1A6B4A),
+                                        color: AppColors.amber,
                                         borderRadius: BorderRadius.only(
                                           topLeft: Radius.circular(16),
                                           bottomLeft: Radius.circular(16),
@@ -140,7 +144,8 @@ class DashboardScreen extends StatelessWidget {
                                                       fontSize: 14,
                                                       fontWeight:
                                                           FontWeight.w600,
-                                                      color: Color(0xFF1E293B),
+                                                      color:
+                                                          AppColors.textPrimary,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 4),
@@ -156,7 +161,8 @@ class DashboardScreen extends StatelessWidget {
                                                         : 'En attente d’un runner',
                                                     style: const TextStyle(
                                                       fontSize: 12,
-                                                      color: Color(0xFF64748B),
+                                                      color: AppColors
+                                                          .textSecondary,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 10),
@@ -167,9 +173,7 @@ class DashboardScreen extends StatelessWidget {
                                                           vertical: 4,
                                                         ),
                                                     decoration: BoxDecoration(
-                                                      color: const Color(
-                                                        0xFFE6F4EF,
-                                                      ),
+                                                      color: AppColors.bg3,
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                             50,
@@ -181,9 +185,7 @@ class DashboardScreen extends StatelessWidget {
                                                         fontSize: 11,
                                                         fontWeight:
                                                             FontWeight.w500,
-                                                        color: Color(
-                                                          0xFF1A6B4A,
-                                                        ),
+                                                        color: AppColors.amber,
                                                       ),
                                                     ),
                                                   ),
@@ -195,7 +197,7 @@ class DashboardScreen extends StatelessWidget {
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
-                                                  color: Color(0xFF1E293B),
+                                                  color: AppColors.textPrimary,
                                                 ),
                                               ),
                                           ],
@@ -212,7 +214,7 @@ class DashboardScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
-                                color: Color(0xFF94A3B8),
+                                color: AppColors.textSecondary,
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -224,10 +226,11 @@ class DashboardScreen extends StatelessWidget {
                                   vertical: 32,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.bg2,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: const Color(0xFFE2E8F0),
+                                    color: AppColors.border,
+                                    width: 0.5,
                                   ),
                                 ),
                                 child: Center(
@@ -237,14 +240,14 @@ class DashboardScreen extends StatelessWidget {
                                         width: 64,
                                         height: 64,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE6F4EF),
+                                          color: AppColors.bg3,
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
                                         ),
                                         child: const Icon(
                                           Icons.inbox_outlined,
-                                          color: Color(0xFF1A6B4A),
+                                          color: AppColors.amber,
                                           size: 32,
                                         ),
                                       ),
@@ -254,7 +257,7 @@ class DashboardScreen extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
-                                          color: Color(0xFF1E293B),
+                                          color: AppColors.textPrimary,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -262,7 +265,7 @@ class DashboardScreen extends StatelessWidget {
                                         'Publie ta première course',
                                         style: TextStyle(
                                           fontSize: 13,
-                                          color: Color(0xFF64748B),
+                                          color: AppColors.textSecondary,
                                         ),
                                       ),
                                       const SizedBox(height: 16),
@@ -279,10 +282,8 @@ class DashboardScreen extends StatelessWidget {
                                             );
                                           },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(
-                                              0xFF1A6B4A,
-                                            ),
-                                            foregroundColor: Colors.white,
+                                            backgroundColor: AppColors.amber,
+                                            foregroundColor: AppColors.black,
                                             padding: const EdgeInsets.symmetric(
                                               vertical: 10,
                                             ),
@@ -313,10 +314,11 @@ class DashboardScreen extends StatelessWidget {
                                     vertical: 12,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: AppColors.bg2,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: const Color(0xFFE2E8F0),
+                                      color: AppColors.border,
+                                      width: 0.5,
                                     ),
                                   ),
                                   child: Row(
@@ -332,7 +334,7 @@ class DashboardScreen extends StatelessWidget {
                                             style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF1E293B),
+                                              color: AppColors.textPrimary,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
@@ -340,7 +342,7 @@ class DashboardScreen extends StatelessWidget {
                                             course.status.label,
                                             style: const TextStyle(
                                               fontSize: 12,
-                                              color: Color(0xFF94A3B8),
+                                              color: AppColors.textSecondary,
                                             ),
                                           ),
                                         ],
@@ -350,7 +352,7 @@ class DashboardScreen extends StatelessWidget {
                                         style: const TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
-                                          color: Color(0xFF1A6B4A),
+                                          color: AppColors.amber,
                                         ),
                                       ),
                                     ],
@@ -379,8 +381,8 @@ class DashboardScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1A6B4A),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.amber,
+                            foregroundColor: AppColors.black,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50),
@@ -398,9 +400,9 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     Container(
                       decoration: const BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.bg2,
                         border: Border(
-                          top: BorderSide(color: Color(0xFFE2E8F0)),
+                          top: BorderSide(color: AppColors.border, width: 0.5),
                         ),
                       ),
                       child: Row(
@@ -466,7 +468,7 @@ class _TabItem extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 2),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF1A6B4A),
+                    color: AppColors.amber,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -475,9 +477,7 @@ class _TabItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: active ? FontWeight.w600 : FontWeight.normal,
-                  color: active
-                      ? const Color(0xFF1A6B4A)
-                      : const Color(0xFF94A3B8),
+                  color: active ? AppColors.amber : AppColors.textSecondary,
                 ),
               ),
             ],

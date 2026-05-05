@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:snack_runner/screens/login_screen.dart';
+import 'package:snack_runner/theme/app_theme.dart';
 
 void main() {
   runApp(const SnackRunnerApp());
@@ -13,11 +14,8 @@ class SnackRunnerApp extends StatelessWidget {
     return MaterialApp(
       title: 'SnackRunner',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1A6B4A)),
-        fontFamily: 'Inter',
-        useMaterial3: true,
-      ),
+      theme: AppTheme.theme,
+      themeMode: ThemeMode.dark,
       home: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 412),

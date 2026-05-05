@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/mission_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 
 class SuiviScreen extends StatelessWidget {
   final String courseId;
@@ -13,10 +14,10 @@ class SuiviScreen extends StatelessWidget {
     final appData = AppData.instance;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.bg0,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: const Text('Suivi de la course'),
       ),
@@ -28,7 +29,7 @@ class SuiviScreen extends StatelessWidget {
             return const Center(
               child: Text(
                 'Course introuvable.',
-                style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
+                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
             );
           }
@@ -47,7 +48,7 @@ class SuiviScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -55,11 +56,14 @@ class SuiviScreen extends StatelessWidget {
                   '${course.category} • ${course.rewardLabel}',
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 24),
-                _StatusChip(status: statusLabel, color: course.status.color),
+                _StatusChip(
+                  status: statusLabel,
+                  color: course.status.badgeBackground,
+                ),
                 const SizedBox(height: 20),
                 _InfoRow(label: 'Demandeur', value: course.requesterName),
                 _InfoRow(label: 'Retrait', value: course.pickupLocation),
@@ -74,7 +78,7 @@ class SuiviScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -88,7 +92,7 @@ class SuiviScreen extends StatelessWidget {
                       : 'La course est terminée.',
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const Spacer(),
@@ -107,8 +111,8 @@ class SuiviScreen extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A6B4A),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.amber,
+                        foregroundColor: AppColors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
@@ -177,7 +181,7 @@ class _InfoRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF94A3B8),
+                color: AppColors.textHint,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -187,7 +191,7 @@ class _InfoRow extends StatelessWidget {
               value,
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF1E293B),
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w500,
               ),
             ),

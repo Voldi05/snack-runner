@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:snack_runner/data/app_data.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/screens/course_detail_screen.dart';
+import 'package:snack_runner/theme/app_colors.dart';
 import 'package:snack_runner/widgets/course_card.dart';
 
 class CoursesScreen extends StatelessWidget {
@@ -12,10 +13,10 @@ class CoursesScreen extends StatelessWidget {
     final appData = AppData.instance;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.bg0,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.bg0,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: const Text('Courses disponibles'),
       ),
@@ -44,12 +45,12 @@ class CoursesScreen extends StatelessWidget {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE6F4EF),
+                            color: AppColors.bg3,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Icon(
                             Icons.shopping_bag_outlined,
-                            color: Color(0xFF1A6B4A),
+                            color: AppColors.amber,
                             size: 40,
                           ),
                         ),
@@ -59,7 +60,7 @@ class CoursesScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1E293B),
+                            color: AppColors.textPrimary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -68,7 +69,7 @@ class CoursesScreen extends StatelessWidget {
                           'Revenez plus tard pour accepter une mission.',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -83,8 +84,8 @@ class CoursesScreen extends StatelessWidget {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A6B4A),
-                              foregroundColor: Colors.white,
+                              backgroundColor: AppColors.amber,
+                              foregroundColor: AppColors.black,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50),
