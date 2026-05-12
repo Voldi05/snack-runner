@@ -43,3 +43,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Node modules
+node_modules/
+
+# Environments
+.env
+
+# Flutter plugins
+.flutter-plugins
+
+# Custom/AI files
+GEMINI.md
