@@ -1,44 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:snack_runner/theme/app_colors.dart';
 
-enum CourseStatus { waiting, accepted, delivering, completed }
+enum CourseStatus {
+  enAttente,
+  acceptee,
+  livraison,
+  terminee;
 
-extension CourseStatusX on CourseStatus {
-  String get label {
-    switch (this) {
-      case CourseStatus.waiting:
-        return 'En attente';
-      case CourseStatus.accepted:
-        return 'Acceptée';
-      case CourseStatus.delivering:
-        return 'Livraison';
-      case CourseStatus.completed:
-        return 'Terminée';
-    }
+  bool canTransitionTo(CourseStatus next) {
+    const allowed = {
+      CourseStatus.enAttente: [CourseStatus.acceptee],
+      CourseStatus.acceptee: [CourseStatus.livraison],
+      CourseStatus.livraison: [CourseStatus.terminee],
+      CourseStatus.terminee: [],
+    };
+    return allowed[this]!.contains(next);
   }
 
+  String get label => switch (this) {
+    CourseStatus.enAttente => 'En attente',
+    CourseStatus.acceptee => 'Acceptée',
+    CourseStatus.livraison => 'Livraison',
+    CourseStatus.terminee => 'Terminée',
+  };
+}
+
+extension CourseStatusX on CourseStatus {
   Color get badgeBackground {
     switch (this) {
-      case CourseStatus.waiting:
+      case CourseStatus.enAttente:
         return AppColors.statusWaitingBg;
-      case CourseStatus.accepted:
+      case CourseStatus.acceptee:
         return AppColors.statusAcceptedBg;
-      case CourseStatus.delivering:
+      case CourseStatus.livraison:
         return AppColors.statusDeliveringBg;
-      case CourseStatus.completed:
+      case CourseStatus.terminee:
         return AppColors.statusCompletedBg;
     }
   }
 
   Color get badgeText {
     switch (this) {
-      case CourseStatus.waiting:
+      case CourseStatus.enAttente:
         return AppColors.statusWaitingText;
-      case CourseStatus.accepted:
+      case CourseStatus.acceptee:
         return AppColors.statusAcceptedText;
-      case CourseStatus.delivering:
+      case CourseStatus.livraison:
         return AppColors.statusDeliveringText;
-      case CourseStatus.completed:
+      case CourseStatus.terminee:
         return AppColors.statusCompletedText;
     }
   }

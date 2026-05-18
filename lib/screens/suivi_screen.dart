@@ -83,11 +83,11 @@ class SuiviScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  course.status == CourseStatus.waiting
+                  course.status == CourseStatus.enAttente
                       ? 'Ta course est publiée et attend un runner.'
-                      : course.status == CourseStatus.accepted
+                      : course.status == CourseStatus.acceptee
                       ? 'Un runner a accepté la course. Prépare la livraison.'
-                      : course.status == CourseStatus.delivering
+                      : course.status == CourseStatus.livraison
                       ? 'La course est en cours de livraison.'
                       : 'La course est terminée.',
                   style: const TextStyle(
@@ -97,8 +97,8 @@ class SuiviScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 if (isRunner &&
-                    (course.status == CourseStatus.accepted ||
-                        course.status == CourseStatus.delivering))
+                    (course.status == CourseStatus.acceptee ||
+                        course.status == CourseStatus.livraison))
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

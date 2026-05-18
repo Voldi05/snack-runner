@@ -79,7 +79,7 @@ class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
           : 'Amphi 3, Bâtiment B',
       reward: rewardValue,
       rewardType: recompenseType,
-      status: CourseStatus.waiting,
+      status: CourseStatus.enAttente,
       requesterName: requester,
       runnerName: '',
     );

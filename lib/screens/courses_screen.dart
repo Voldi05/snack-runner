@@ -29,7 +29,7 @@ class CoursesScreen extends StatelessWidget {
               final waitingCourses = courses
                   .where(
                     (course) =>
-                        course.status == CourseStatus.waiting &&
+                        course.status == CourseStatus.enAttente &&
                         course.requesterName != currentUser,
                   )
                   .toList();

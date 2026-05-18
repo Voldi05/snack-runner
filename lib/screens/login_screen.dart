@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:snack_runner/data/app_data.dart';
-import 'package:snack_runner/screens/dashboard_screen.dart';
-import 'package:snack_runner/screens/inscription_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:snack_runner/providers/auth_provider.dart';
+import 'package:snack_runner/providers/user_provider.dart';
+import 'package:snack_runner/services/auth_service.dart';
 import 'package:snack_runner/theme/app_colors.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _isLoading = false;
@@ -175,14 +177,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             const Duration(milliseconds: 800),
                           );
                           if (mounted) {
-                            AppData.instance.setCurrentUser(userName);
+                            final name = userName;
+                            ref.read(userProvider.notifier).state = name;
+                            ref.read(authProvider.notifier).login();
+                            await AuthService().saveToken(name);
                             // ignore: use_build_context_synchronously
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const DashboardScreen(),
-                              ),
-                            );
+                            context.go('/dashboard');
                           }
                         },
                   style: ElevatedButton.styleFrom(
@@ -232,12 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const InscriptionScreen(),
-                      ),
-                    );
+                    context.push('/inscription');
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.amber,

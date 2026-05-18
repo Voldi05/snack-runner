@@ -74,7 +74,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 if (currentCourse.runnerName.isNotEmpty)
                   _DetailRow(label: 'Runner', value: currentCourse.runnerName),
                 const SizedBox(height: 24),
-                if (currentCourse.status == CourseStatus.waiting &&
+                if (currentCourse.status == CourseStatus.enAttente &&
                     currentCourse.requesterName != appData.currentUser.value)
                   SizedBox(
                     width: double.infinity,
@@ -128,8 +128,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                             ),
                     ),
                   ),
-                if ((currentCourse.status == CourseStatus.accepted ||
-                        currentCourse.status == CourseStatus.delivering) &&
+                if ((currentCourse.status == CourseStatus.acceptee ||
+                        currentCourse.status == CourseStatus.livraison) &&
                     isRunner)
                   SizedBox(
                     width: double.infinity,

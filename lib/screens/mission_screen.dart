@@ -37,9 +37,9 @@ class _MissionScreenState extends State<MissionScreen> {
           }
 
           final isRunner = course.runnerName == appData.currentUser.value;
-          final canStart = course.status == CourseStatus.accepted && isRunner;
+          final canStart = course.status == CourseStatus.acceptee && isRunner;
           final canComplete =
-              course.status == CourseStatus.delivering && isRunner;
+              course.status == CourseStatus.livraison && isRunner;
 
           return Padding(
             padding: const EdgeInsets.all(20),

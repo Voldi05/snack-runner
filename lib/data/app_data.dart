@@ -17,7 +17,7 @@ class AppData {
       deliveryLocation: 'Amphi 3, Bâtiment B',
       reward: 500,
       rewardType: 'Argent',
-      status: CourseStatus.waiting,
+      status: CourseStatus.enAttente,
       requesterName: 'Kofi',
       runnerName: '',
     ),
@@ -29,7 +29,7 @@ class AppData {
       deliveryLocation: 'Résidence A',
       reward: 700,
       rewardType: 'Argent',
-      status: CourseStatus.waiting,
+      status: CourseStatus.enAttente,
       requesterName: 'Amina',
       runnerName: '',
     ),
@@ -41,7 +41,7 @@ class AppData {
       deliveryLocation: 'Bibliothèque',
       reward: 300,
       rewardType: 'Argent',
-      status: CourseStatus.completed,
+      status: CourseStatus.terminee,
       requesterName: 'Kofi',
       runnerName: 'Sam',
     ),
@@ -79,7 +79,7 @@ class AppData {
   void acceptCourse(String courseId) {
     _updateCourse(courseId, (course) {
       return course.copyWith(
-        status: CourseStatus.accepted,
+        status: CourseStatus.acceptee,
         runnerName: currentUser.value,
       );
     });
@@ -87,13 +87,13 @@ class AppData {
 
   void startDelivery(String courseId) {
     _updateCourse(courseId, (course) {
-      return course.copyWith(status: CourseStatus.delivering);
+      return course.copyWith(status: CourseStatus.livraison);
     });
   }
 
   void completeCourse(String courseId) {
     _updateCourse(courseId, (course) {
-      final updatedCourse = course.copyWith(status: CourseStatus.completed);
+      final updatedCourse = course.copyWith(status: CourseStatus.terminee);
       if (course.runnerName == currentUser.value) {
         totalEarnings.value += course.reward;
       }

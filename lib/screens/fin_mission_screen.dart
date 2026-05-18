@@ -37,7 +37,7 @@ class _FinMissionScreenState extends State<FinMissionScreen> {
             return const Center(child: Text('Course introuvable.'));
           }
 
-          final isCompleted = course.status == CourseStatus.completed;
+          final isCompleted = course.status == CourseStatus.terminee;
 
           return Padding(
             padding: const EdgeInsets.all(20),

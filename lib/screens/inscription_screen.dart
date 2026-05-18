@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:snack_runner/data/app_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:snack_runner/providers/user_provider.dart';
 import 'package:snack_runner/theme/app_colors.dart';
 
-class InscriptionScreen extends StatefulWidget {
+class InscriptionScreen extends ConsumerStatefulWidget {
   const InscriptionScreen({super.key});
 
   @override
-  State<InscriptionScreen> createState() => _InscriptionScreenState();
+  ConsumerState<InscriptionScreen> createState() => _InscriptionScreenState();
 }
 
-class _InscriptionScreenState extends State<InscriptionScreen> {
+class _InscriptionScreenState extends ConsumerState<InscriptionScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -215,9 +217,9 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                           );
                           if (mounted) {
                             final name = nameController.text.trim();
-                            AppData.instance.setCurrentUser(name);
+                            ref.read(userProvider.notifier).state = name;
                             // ignore: use_build_context_synchronously
-                            Navigator.pop(context);
+                            context.pop();
                           }
                         },
                   style: ElevatedButton.styleFrom(
