@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:snack_runner/providers/user_provider.dart';
 import 'package:snack_runner/theme/app_colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class InscriptionScreen extends ConsumerStatefulWidget {
   const InscriptionScreen({super.key});
@@ -212,14 +212,46 @@ class _InscriptionScreenState extends ConsumerState<InscriptionScreen> {
                       : () async {
                           if (!_validate()) return;
                           setState(() => _isLoading = true);
-                          await Future.delayed(
-                            const Duration(milliseconds: 800),
-                          );
-                          if (mounted) {
-                            final name = nameController.text.trim();
-                            ref.read(userProvider.notifier).state = name;
-                            // ignore: use_build_context_synchronously
-                            context.pop();
+                          try {
+                            final response = await Supabase.instance.client.auth
+                                .signUp(
+                                  email: emailController.text.trim(),
+                                  password: passwordController.text.trim(),
+                                );
+
+                            if (response.user != null) {
+                              // Créer le profil dans la table users
+                              await Supabase.instance.client
+                                  .from('users')
+                                  .insert({
+                                    'id': response.user!.id,
+                                    'nom': nameController.text.trim(),
+                                    'email': emailController.text.trim(),
+                                    'role': selectedRole == 'Runner'
+                                        ? 'runner'
+                                        : 'requester',
+                                  });
+
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Compte créé ! Vérifie ton email.',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                context.pop();
+                              }
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setState(() {
+                                _emailError = 'Erreur : ${e.toString()}';
+                              });
+                            }
+                          } finally {
+                            if (mounted) setState(() => _isLoading = false);
                           }
                         },
                   style: ElevatedButton.styleFrom(

@@ -5,6 +5,7 @@ import 'package:snack_runner/providers/auth_provider.dart';
 import 'package:snack_runner/providers/user_provider.dart';
 import 'package:snack_runner/services/auth_service.dart';
 import 'package:snack_runner/theme/app_colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -173,16 +174,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : () async {
                           if (!_validate()) return;
                           setState(() => _isLoading = true);
-                          await Future.delayed(
-                            const Duration(milliseconds: 800),
-                          );
-                          if (mounted) {
-                            final name = userName;
-                            ref.read(userProvider.notifier).state = name;
-                            ref.read(authProvider.notifier).login();
-                            await AuthService().saveToken(name);
-                            // ignore: use_build_context_synchronously
-                            context.go('/dashboard');
+                          try {
+                            final response = await Supabase.instance.client.auth
+                                .signInWithPassword(
+                                  email: emailController.text.trim(),
+                                  password: passwordController.text.trim(),
+                                );
+                            if (mounted) {
+                              final user = response.user;
+                              if (user != null) {
+                                final name =
+                                    user.email?.split('@').first ?? 'Runner';
+                                ref.read(userProvider.notifier).state = name;
+                                ref.read(authProvider.notifier).login();
+                                await AuthService().saveToken(name);
+                                context.go('/dashboard');
+                              }
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              setState(() {
+                                _emailError = 'Email ou mot de passe incorrect';
+                              });
+                            }
+                          } finally {
+                            if (mounted) setState(() => _isLoading = false);
                           }
                         },
                   style: ElevatedButton.styleFrom(

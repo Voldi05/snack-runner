@@ -28,13 +28,14 @@ class AppRouter {
         redirect: (context, state) {
           final loggedIn = authListenable.value;
           final loggingIn =
-              state.location == '/login' || state.location == '/inscription';
+              state.matchedLocation == '/login' ||
+              state.matchedLocation == '/inscription';
           if (!loggedIn && !loggingIn) {
             return '/login';
           }
           if (loggedIn &&
-              (state.location == '/login' ||
-                  state.location == '/inscription')) {
+              (state.matchedLocation == '/login' ||
+                  state.matchedLocation == '/inscription')) {
             return '/dashboard';
           }
           return null;
