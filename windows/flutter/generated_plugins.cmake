@@ -4,16 +4,12 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
-<<<<<<< HEAD
-  flutter_secure_storage_windows
-=======
   firebase_core
->>>>>>> cd5c9df17e738c784c27ee3f18f7814b8deb1fce
+  flutter_secure_storage_windows
   url_launcher_windows
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
-  jni
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)
