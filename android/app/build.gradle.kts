@@ -42,3 +42,10 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Importez le BOM Firebase
+    implementation platform('com.google.firebase:firebase-bom:32.x.x')
+    // Ajoutez la dépendance FCM
+    implementation 'com.google.firebase:firebase-messaging'
+}

@@ -1,0 +1,7 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "deno.enablePaths": [
+        "supabase/functions"
+    ],
+    "deno.unstable": true
+}
