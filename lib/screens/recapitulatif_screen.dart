@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:snack_runner/models/course.dart';
 import 'package:snack_runner/providers/course_provider.dart';
-import 'package:snack_runner/providers/user_provider.dart';
 import 'package:snack_runner/theme/app_colors.dart';
+import 'package:snack_runner/widgets/common.dart';
 
 class RecapitulatifScreen extends ConsumerStatefulWidget {
-  final Course course;
+  final CourseDraft draft;
 
-  const RecapitulatifScreen({super.key, required this.course});
+  const RecapitulatifScreen({super.key, required this.draft});
 
   @override
   ConsumerState<RecapitulatifScreen> createState() =>
@@ -22,34 +22,32 @@ class _RecapitulatifScreenState extends ConsumerState<RecapitulatifScreen> {
   Future<void> _publish() async {
     setState(() => _isLoading = true);
     try {
-      final userName = ref.read(userProvider);
-      final course = widget.course.requesterName.isEmpty
-          ? widget.course.copyWith(requesterName: userName)
-          : widget.course;
-      final id = await ref.read(courseProvider.notifier).addCourse(course);
+      final course = await ref
+          .read(courseRepositoryProvider)
+          .create(widget.draft);
       if (!mounted) return;
-      context.pushReplacement('/suivi/$id');
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Impossible de publier la course. Vérifie ta connexion et réessaie.',
-          ),
-        ),
-      );
+      // Le formulaire sort de la pile : retour arrière depuis le suivi
+      // ramène au tableau de bord, sans possibilité de republier.
+      final router = GoRouter.of(context);
+      router.go('/dashboard');
+      router.push('/suivi/${course.id}');
+    } catch (error) {
+      if (mounted) {
+        showErrorSnackBar(context, error);
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final draft = widget.draft;
     final details = [
-      {'label': 'Type', 'value': widget.course.category},
-      {'label': 'Commande', 'value': widget.course.title},
-      {'label': 'Retrait', 'value': widget.course.pickupLocation},
-      {'label': 'Livraison', 'value': widget.course.deliveryLocation},
-      {'label': 'Récompense', 'value': widget.course.rewardLabel},
+      {'label': 'Type', 'value': draft.category.label},
+      {'label': 'Commande', 'value': draft.description},
+      {'label': 'Retrait', 'value': draft.pickupLocation},
+      {'label': 'Livraison', 'value': draft.deliveryLocation},
+      {'label': 'Récompense', 'value': draft.rewardLabel},
     ];
 
     return Scaffold(
@@ -62,7 +60,7 @@ class _RecapitulatifScreenState extends ConsumerState<RecapitulatifScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: () => context.pop(),
+                    onPressed: _isLoading ? null : () => context.pop(),
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
                       color: AppColors.textPrimary,

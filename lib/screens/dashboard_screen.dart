@@ -2,13 +2,81 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:snack_runner/models/course.dart';
+import 'package:snack_runner/models/user_profile.dart';
 import 'package:snack_runner/providers/auth_provider.dart';
 import 'package:snack_runner/providers/course_provider.dart';
-import 'package:snack_runner/providers/user_provider.dart';
-import 'package:snack_runner/services/auth_service.dart';
+import 'package:snack_runner/screens/courses_screen.dart';
 import 'package:snack_runner/theme/app_colors.dart';
+import 'package:snack_runner/widgets/common.dart';
 
 enum DashboardMode { requester, runner }
+
+/// Chiffres affichés sur le tableau de bord, calculés à partir des courses
+/// visibles par l'utilisateur.
+class DashboardStats {
+  final List<Course> myCourses;
+  final Course? activeCourse;
+  final int postedThisMonth;
+  final double paidRewards;
+  final Course? activeMission;
+  final int completedMissions;
+  final double earnings;
+  final List<Course> available;
+
+  const DashboardStats._({
+    required this.myCourses,
+    required this.activeCourse,
+    required this.postedThisMonth,
+    required this.paidRewards,
+    required this.activeMission,
+    required this.completedMissions,
+    required this.earnings,
+    required this.available,
+  });
+
+  factory DashboardStats.from(
+    List<Course> courses,
+    String? userId, {
+    DateTime? now,
+  }) {
+    final today = (now ?? DateTime.now()).toLocal();
+    final myCourses = courses.where((c) => c.isRequester(userId)).toList();
+    final myMissions = courses.where((c) => c.isRunner(userId)).toList();
+
+    double moneyOf(Iterable<Course> list) => list
+        .where(
+          (c) =>
+              c.status == CourseStatus.terminee &&
+              c.rewardType == RewardType.argent,
+        )
+        .fold(0, (sum, c) => sum + (c.rewardAmount ?? 0));
+
+    Course? firstWhere(Iterable<Course> list, bool Function(Course) test) {
+      for (final course in list) {
+        if (test(course)) return course;
+      }
+      return null;
+    }
+
+    return DashboardStats._(
+      myCourses: myCourses,
+      activeCourse:
+          firstWhere(myCourses, (c) => c.status.isActive) ??
+          firstWhere(myCourses, (c) => c.status == CourseStatus.enAttente),
+      postedThisMonth: myCourses.where((c) {
+        final created = c.createdAt.toLocal();
+        return created.year == today.year && created.month == today.month;
+      }).length,
+      paidRewards: moneyOf(myCourses),
+      activeMission: firstWhere(myMissions, (c) => c.status.isActive),
+      completedMissions: myMissions
+          .where((c) => c.status == CourseStatus.terminee)
+          .length,
+      earnings: moneyOf(myMissions),
+      available: availableCourses(courses, userId),
+    );
+  }
+}
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -18,58 +86,68 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  DashboardMode _mode = DashboardMode.requester;
+  /// Choix explicite de l'utilisateur ; à défaut, le rôle du profil.
+  DashboardMode? _mode;
 
-  Future<void> _logout() async {
-    await AuthService().clearToken();
-    await ref.read(authProvider.notifier).logout();
-    if (!mounted) return;
-    context.go('/login');
+  Future<void> _switchMode(DashboardMode mode) async {
+    if (mode == _mode) return;
+    setState(() => _mode = mode);
+    // Seuls les runners reçoivent les push de nouvelles courses : le rôle
+    // suit le mode choisi.
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .updateRole(
+            mode == DashboardMode.runner ? UserRole.runner : UserRole.requester,
+          );
+      ref.invalidate(profileProvider);
+    } catch (error) {
+      if (mounted) showErrorSnackBar(context, error);
+    }
+  }
+
+  Future<void> _signOut() async {
+    try {
+      await ref.read(authRepositoryProvider).signOut();
+    } catch (error) {
+      if (mounted) showErrorSnackBar(context, error);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(userProvider);
-    final courses = ref.watch(courseProvider);
-    final hasUser = currentUser.isNotEmpty;
+    final userId = ref.watch(currentUserIdProvider).valueOrNull;
+    final profile = ref.watch(profileProvider).valueOrNull;
+    final coursesAsync = ref.watch(coursesProvider);
+    final stats = DashboardStats.from(coursesAsync.valueOrNull ?? [], userId);
+    final mode =
+        _mode ??
+        (profile?.role == UserRole.runner
+            ? DashboardMode.runner
+            : DashboardMode.requester);
+    final name = profile?.nom ?? '';
 
-    final myCourses = hasUser
-        ? courses.where((c) => c.requesterName == currentUser).toList()
-        : <Course>[];
-    final activeList = myCourses
-        .where(
-          (c) =>
-              c.status == CourseStatus.acceptee ||
-              c.status == CourseStatus.livraison,
-        )
-        .toList();
-    final activeCourse = activeList.isNotEmpty
-        ? activeList.first
-        : myCourses.isNotEmpty
-        ? myCourses.first
-        : null;
-    final recentCourses = myCourses.take(3).toList();
-
-    final availableCourses = hasUser
-        ? courses
-              .where(
-                (c) =>
-                    c.status == CourseStatus.enAttente &&
-                    c.requesterName != currentUser,
-              )
-              .toList()
-        : <Course>[];
-    final missionList = hasUser
-        ? courses
-              .where(
-                (c) =>
-                    c.runnerName == currentUser &&
-                    (c.status == CourseStatus.acceptee ||
-                        c.status == CourseStatus.livraison),
-              )
-              .toList()
-        : <Course>[];
-    final myMission = missionList.isNotEmpty ? missionList.first : null;
+    Widget content;
+    if (coursesAsync.hasError && !coursesAsync.hasValue) {
+      content = ErrorView(
+        error: coursesAsync.error!,
+        onRetry: () => ref.invalidate(coursesProvider),
+      );
+    } else if (!coursesAsync.hasValue) {
+      content = const LoadingView();
+    } else {
+      content = RefreshIndicator(
+        color: AppColors.amber,
+        onRefresh: () => ref.refresh(coursesProvider.future),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: mode == DashboardMode.requester
+              ? _RequesterView(stats: stats)
+              : _RunnerView(stats: stats),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.bg0,
@@ -81,57 +159,62 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Bon retour 👋',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Bon retour 👋',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Bonjour, $currentUser',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                        const SizedBox(height: 2),
+                        Text(
+                          name.isEmpty ? 'Bonjour' : 'Bonjour, $name',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   Row(
                     children: [
                       IconButton(
-                        onPressed: _logout,
+                        tooltip: 'Se déconnecter',
+                        onPressed: _signOut,
                         icon: const Icon(
                           Icons.logout,
                           color: AppColors.textSecondary,
                           size: 20,
                         ),
                       ),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.bg3,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.amber,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            currentUser.isNotEmpty
-                                ? currentUser[0].toUpperCase()
-                                : 'U',
-                            style: const TextStyle(
+                      GestureDetector(
+                        onTap: () => context.push('/profil'),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.bg3,
+                            shape: BoxShape.circle,
+                            border: Border.all(
                               color: AppColors.amber,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                              style: const TextStyle(
+                                color: AppColors.amber,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
                             ),
                           ),
                         ),
@@ -157,15 +240,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     _ToggleBtn(
                       label: 'Requester',
                       icon: Icons.shopping_bag_outlined,
-                      active: _mode == DashboardMode.requester,
-                      onTap: () =>
-                          setState(() => _mode = DashboardMode.requester),
+                      active: mode == DashboardMode.requester,
+                      onTap: () => _switchMode(DashboardMode.requester),
                     ),
                     _ToggleBtn(
                       label: 'Runner',
                       icon: Icons.directions_run,
-                      active: _mode == DashboardMode.runner,
-                      onTap: () => setState(() => _mode = DashboardMode.runner),
+                      active: mode == DashboardMode.runner,
+                      onTap: () => _switchMode(DashboardMode.runner),
                     ),
                   ],
                 ),
@@ -173,21 +255,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: 20),
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _mode == DashboardMode.requester
-                    ? _RequesterView(
-                        activeCourse: activeCourse,
-                        recentCourses: recentCourses,
-                        totalCourses: myCourses.length,
-                      )
-                    : _RunnerView(
-                        myMission: myMission,
-                        availableCourses: availableCourses,
-                      ),
-              ),
-            ),
+            Expanded(child: content),
 
             // CTA
             Padding(
@@ -195,13 +263,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _mode == DashboardMode.requester
+                  onPressed: () => mode == DashboardMode.requester
                       ? context.push('/nouvelle-course')
                       : context.push('/courses'),
-                  icon: const Icon(Icons.add, size: 18),
+                  icon: Icon(
+                    mode == DashboardMode.requester ? Icons.add : Icons.search,
+                    size: 18,
+                  ),
                   label: Text(
-                    _mode == DashboardMode.requester
-                        ? '+ Nouvelle course'
+                    mode == DashboardMode.requester
+                        ? 'Nouvelle course'
                         : 'Voir les courses dispo',
                     style: const TextStyle(
                       fontSize: 15,
@@ -237,7 +308,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     onTap: () {},
                   ),
                   _TabItem(
-                    label: 'Mes courses',
+                    label: 'Courses',
                     icon: Icons.list_alt_outlined,
                     active: false,
                     onTap: () => context.push('/courses'),
@@ -246,7 +317,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     label: 'Profil',
                     icon: Icons.person_outline,
                     active: false,
-                    onTap: () {},
+                    onTap: () => context.push('/profil'),
                   ),
                 ],
               ),
@@ -261,18 +332,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 // ── Requester View ────────────────────────────────────────────────────────────
 
 class _RequesterView extends StatelessWidget {
-  final Course? activeCourse;
-  final List<Course> recentCourses;
-  final int totalCourses;
+  final DashboardStats stats;
 
-  const _RequesterView({
-    required this.activeCourse,
-    required this.recentCourses,
-    required this.totalCourses,
-  });
+  const _RequesterView({required this.stats});
 
   @override
   Widget build(BuildContext context) {
+    final activeCourse = stats.activeCourse;
+    final recentCourses = stats.myCourses.take(3).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -282,7 +350,7 @@ class _RequesterView extends StatelessWidget {
           course: activeCourse,
           onTap: activeCourse == null
               ? null
-              : () => context.push('/suivi/${activeCourse!.id}'),
+              : () => context.push('/suivi/${activeCourse.id}'),
         ),
         const SizedBox(height: 16),
 
@@ -291,15 +359,15 @@ class _RequesterView extends StatelessWidget {
           children: [
             Expanded(
               child: _StatCard(
-                value: '$totalCourses',
+                value: '${stats.postedThisMonth}',
                 unit: 'courses',
                 label: 'Postées ce mois',
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: _StatCard(
-                value: '0',
+                value: stats.paidRewards.round().toString(),
                 unit: 'FCFA',
                 label: 'Récompenses payées',
               ),
@@ -328,69 +396,89 @@ class _RequesterView extends StatelessWidget {
 // ── Runner View ───────────────────────────────────────────────────────────────
 
 class _RunnerView extends StatelessWidget {
-  final Course? myMission;
-  final List<Course> availableCourses;
+  final DashboardStats stats;
 
-  const _RunnerView({required this.myMission, required this.availableCourses});
+  const _RunnerView({required this.stats});
 
   @override
   Widget build(BuildContext context) {
-    final shown = availableCourses.take(3).toList();
+    final mission = stats.activeMission;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (myMission != null) ...[
-          const _SectionLabel('Ma mission en cours'),
-          const SizedBox(height: 8),
-          _CourseCard(
-            course: myMission!,
-            onTap: () => context.push('/mission/${myMission!.id}'),
-          ),
-          const SizedBox(height: 16),
-        ],
+        const _SectionLabel('Mission en cours'),
+        const SizedBox(height: 8),
+        _ActiveCourseCard(
+          course: mission,
+          onTap: mission == null
+              ? null
+              : () => context.push('/mission/${mission.id}'),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _StatCard(
+                value: '${stats.completedMissions}',
+                unit: 'missions',
+                label: 'Terminées',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _StatCard(
+                value: stats.earnings.round().toString(),
+                unit: 'FCFA',
+                label: 'Gagnés',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
         const _SectionLabel('Courses disponibles'),
         const SizedBox(height: 8),
-        if (shown.isEmpty)
+        if (stats.available.isEmpty)
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
               color: AppColors.bg2,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: AppColors.border, width: 0.5),
             ),
-            child: const Center(
-              child: Column(
-                children: [
-                  Icon(Icons.directions_run, color: AppColors.amber, size: 36),
-                  SizedBox(height: 12),
-                  Text(
-                    'Aucune course disponible',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+            child: const Column(
+              children: [
+                Icon(Icons.directions_run, color: AppColors.amber, size: 36),
+                SizedBox(height: 12),
+                Text(
+                  'Aucune course disponible',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Les nouvelles courses apparaîtront ici',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Les nouvelles courses apparaîtront ici',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           )
         else
-          ...shown.map(
-            (c) => _CourseCard(
-              course: c,
-              onTap: () => context.push('/course-detail/${c.id}', extra: c),
-            ),
-          ),
+          ...stats.available
+              .take(3)
+              .map(
+                (c) => _CourseCard(
+                  course: c,
+                  onTap: () => context.push('/course/${c.id}'),
+                ),
+              ),
         const SizedBox(height: 24),
       ],
     );
@@ -549,9 +637,11 @@ class _ActiveCourseCard extends StatelessWidget {
               size: 16,
             ),
             SizedBox(width: 10),
-            Text(
-              'Aucune course active pour le moment.',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            Expanded(
+              child: Text(
+                'Aucune course active pour le moment.',
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              ),
             ),
           ],
         ),
@@ -567,90 +657,87 @@ class _ActiveCourseCard extends StatelessWidget {
         ? 2
         : 3;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.bg2,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFF3a2e10), width: 1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    course!.title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+    final card = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.bg2,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF3a2e10), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  course!.title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.amber.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    course!.status.label,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.amber,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Récompense · ${course!.rewardLabel}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
               ),
-            ),
-            const SizedBox(height: 14),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(99),
-              child: LinearProgressIndicator(
-                value: (stepIndex + 1) / steps.length,
-                backgroundColor: AppColors.bg3,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppColors.amber,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
                 ),
-                minHeight: 4,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: steps.asMap().entries.map((e) {
-                final active = e.key == stepIndex;
-                return Text(
-                  e.value,
-                  style: TextStyle(
+                decoration: BoxDecoration(
+                  color: AppColors.amber.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  course!.status.label,
+                  style: const TextStyle(
                     fontSize: 10,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.normal,
-                    color: active ? AppColors.amber : AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.amber,
                   ),
-                );
-              }).toList(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Récompense · ${course!.rewardLabel}',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 14),
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: (stepIndex + 1) / steps.length,
+              backgroundColor: AppColors.bg3,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.amber),
+              minHeight: 4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: steps.asMap().entries.map((e) {
+              final active = e.key == stepIndex;
+              return Text(
+                e.value,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.normal,
+                  color: active ? AppColors.amber : AppColors.textSecondary,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
+    return onTap == null ? card : GestureDetector(onTap: onTap, child: card);
   }
 }
 
@@ -736,54 +823,52 @@ class _CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.bg2,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border, width: 0.5),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    course.title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+    final card = Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.bg2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border, width: 0.5),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    course.status.label,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  course.status.label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Text(
-              course.rewardLabel,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.amber,
-              ),
+          ),
+          Text(
+            course.rewardLabel,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.amber,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+    return onTap == null ? card : GestureDetector(onTap: onTap, child: card);
   }
 }
 

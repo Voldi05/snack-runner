@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:snack_runner/models/course.dart';
+import 'package:snack_runner/providers/auth_provider.dart';
 import 'package:snack_runner/providers/course_provider.dart';
-import 'package:snack_runner/providers/user_provider.dart';
 import 'package:snack_runner/theme/app_colors.dart';
+import 'package:snack_runner/widgets/common.dart';
 
 class CourseDetailScreen extends ConsumerStatefulWidget {
-  final Course course;
+  final String courseId;
 
-  const CourseDetailScreen({super.key, required this.course});
+  const CourseDetailScreen({super.key, required this.courseId});
 
   @override
   ConsumerState<CourseDetailScreen> createState() => _CourseDetailScreenState();
@@ -18,193 +19,95 @@ class CourseDetailScreen extends ConsumerStatefulWidget {
 class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
   bool _isLoading = false;
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _accept(Course course, String userName) async {
-    if (userName.isEmpty) {
-      _showMessage('Ton profil n\'a pas de nom. Reconnecte-toi et réessaie.');
-      return;
-    }
+  Future<void> _accept(Course course) async {
     setState(() => _isLoading = true);
     try {
-      final ok = await ref
-          .read(courseProvider.notifier)
-          .acceptCourse(course.id, userName);
+      await ref.read(courseRepositoryProvider).accept(course.id);
       if (!mounted) return;
-      setState(() => _isLoading = false);
-      if (ok) {
-        context.push('/mission/${course.id}');
-      } else {
-        _showMessage('Cette course a déjà été prise.');
-        context.pop();
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      _showMessage('Impossible d\'accepter la course. Vérifie ta connexion.');
+      context.pushReplacement('/mission/${course.id}');
+    } catch (error) {
+      if (mounted) showErrorSnackBar(context, error);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final courses = ref.watch(courseProvider);
-    final userName = ref.watch(userProvider);
-
-    final currentCourse = courses.firstWhere(
-      (item) => item.id == widget.course.id,
-      orElse: () => widget.course,
-    );
-    final isRunner =
-        userName.isNotEmpty && currentCourse.runnerName == userName;
-    final requester = currentCourse.requesterName;
+    final userId = ref.watch(currentUserIdProvider).valueOrNull;
 
     return Scaffold(
       backgroundColor: AppColors.bg0,
-      appBar: AppBar(
-        backgroundColor: AppColors.bg0,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        title: const Text('Détails de la course'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              currentCourse.title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${currentCourse.category} • ${currentCourse.rewardLabel}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            _DetailRow(
-              label: 'Point de retrait',
-              value: currentCourse.pickupLocation,
-            ),
-            _DetailRow(
-              label: 'Adresse de livraison',
-              value: currentCourse.deliveryLocation,
-            ),
-            _DetailRow(label: 'Demandeur', value: requester),
-            _DetailRow(label: 'Statut', value: currentCourse.status.label),
-            if (currentCourse.runnerName.isNotEmpty)
-              _DetailRow(label: 'Runner', value: currentCourse.runnerName),
-            const SizedBox(height: 24),
-            if (currentCourse.status == CourseStatus.enAttente &&
-                currentCourse.requesterName != userName)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () => _accept(currentCourse, userName),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.amber,
-                    foregroundColor: AppColors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.white,
-                            ),
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Accepter cette course',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-              ),
-            if ((currentCourse.status == CourseStatus.acceptee ||
-                    currentCourse.status == CourseStatus.livraison) &&
-                isRunner)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => context.push('/mission/${currentCourse.id}'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.amber,
-                    side: const BorderSide(color: AppColors.amber, width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                  ),
-                  child: const Text(
-                    'Voir la mission',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      appBar: darkAppBar('Détails de la course'),
+      body: CourseLoader(
+        courseId: widget.courseId,
+        builder: (context, course) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-              ),
-          ],
-        ),
+                const SizedBox(height: 8),
+                Text(
+                  '${course.category.label} • ${course.rewardLabel}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (_hasDetails(course))
+                  InfoRow(label: 'Commande', value: course.description!),
+                InfoRow(
+                  label: 'Point de retrait',
+                  value: course.pickupLocation,
+                ),
+                InfoRow(
+                  label: 'Adresse de livraison',
+                  value: course.deliveryLocation,
+                ),
+                InfoRow(label: 'Demandeur', value: course.requesterName),
+                InfoRow(label: 'Statut', value: course.status.label),
+                if (course.runnerName.isNotEmpty)
+                  InfoRow(label: 'Runner', value: course.runnerName),
+                const SizedBox(height: 24),
+                if (course.status == CourseStatus.enAttente &&
+                    !course.isRequester(userId))
+                  PrimaryButton(
+                    label: 'Accepter cette course',
+                    isLoading: _isLoading,
+                    onPressed: () => _accept(course),
+                  ),
+                if (course.status.isActive && course.isRunner(userId))
+                  SecondaryButton(
+                    label: 'Voir la mission',
+                    onPressed: () => context.push('/mission/${course.id}'),
+                  ),
+                if (course.isRequester(userId))
+                  SecondaryButton(
+                    label: 'Suivre ma course',
+                    onPressed: () => context.push('/suivi/${course.id}'),
+                  ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _DetailRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+/// La description complète n'est affichée que si elle apporte plus que le
+/// titre (qui en est la première ligne).
+bool _hasDetails(Course course) {
+  final description = course.description?.trim() ?? '';
+  return description.isNotEmpty && description != course.title;
 }

@@ -45,5 +45,13 @@ app.*.map.json
 /android/app/release
 
 .env
+.env.json
+!.env.example
 
-.env
+# Signature Android
+/android/key.properties
+*.jks
+*.keystore
+
+# Sortie de déploiement Vercel (générée en CI)
+.vercel/

@@ -1,46 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:snack_runner/core/validators.dart';
 import 'package:snack_runner/models/course.dart';
-import 'package:snack_runner/providers/user_provider.dart';
 import 'package:snack_runner/theme/app_colors.dart';
 
-class NouvelleCourseScreen extends ConsumerStatefulWidget {
+class NouvelleCourseScreen extends StatefulWidget {
   const NouvelleCourseScreen({super.key});
 
   @override
-  ConsumerState<NouvelleCourseScreen> createState() =>
-      _NouvelleCourseScreenState();
+  State<NouvelleCourseScreen> createState() => _NouvelleCourseScreenState();
 }
 
-class _NouvelleCourseScreenState extends ConsumerState<NouvelleCourseScreen> {
+class _NouvelleCourseScreenState extends State<NouvelleCourseScreen> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController pickupController = TextEditingController();
   final TextEditingController deliveryController = TextEditingController();
   final TextEditingController rewardController = TextEditingController();
-  String typeSelectionne = 'Cafétéria';
+  final TextEditingController rewardDescriptionController =
+      TextEditingController();
+  CourseCategory typeSelectionne = CourseCategory.cafeteria;
+  RewardType recompenseType = RewardType.argent;
   String? _descriptionError;
   String? _pickupError;
   String? _deliveryError;
   String? _rewardError;
 
   bool _validate() {
-    final reward = double.tryParse(rewardController.text.trim());
     setState(() {
-      _descriptionError = descriptionController.text.trim().isEmpty
-          ? 'Description requise'
-          : null;
-      _pickupError = pickupController.text.trim().isEmpty
-          ? 'Lieu de retrait requis'
-          : null;
-      _deliveryError = deliveryController.text.trim().isEmpty
-          ? 'Lieu de livraison requis'
-          : null;
-      _rewardError = rewardController.text.trim().isEmpty
-          ? 'Montant requis'
-          : (reward == null || reward <= 0)
-          ? 'Montant invalide'
-          : null;
+      _descriptionError = Validators.required(
+        descriptionController.text,
+        'Description requise',
+      );
+      _pickupError = Validators.required(
+        pickupController.text,
+        'Lieu de retrait requis',
+      );
+      _deliveryError = Validators.required(
+        deliveryController.text,
+        'Lieu de livraison requis',
+      );
+      _rewardError = recompenseType == RewardType.argent
+          ? Validators.rewardAmount(rewardController.text)
+          : Validators.required(
+              rewardDescriptionController.text,
+              'Décris la récompense',
+            );
     });
     return _descriptionError == null &&
         _pickupError == null &&
@@ -54,30 +58,23 @@ class _NouvelleCourseScreenState extends ConsumerState<NouvelleCourseScreen> {
     pickupController.dispose();
     deliveryController.dispose();
     rewardController.dispose();
+    rewardDescriptionController.dispose();
     super.dispose();
   }
 
-  Course _buildCourse() {
-    final requester = ref.read(userProvider);
-    final rewardValue = double.tryParse(rewardController.text.trim()) ?? 0;
-
-    return Course(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+  CourseDraft _buildDraft() {
+    final isMoney = recompenseType == RewardType.argent;
+    return CourseDraft(
       category: typeSelectionne,
-      title: descriptionController.text.trim(),
+      description: descriptionController.text.trim(),
       pickupLocation: pickupController.text.trim(),
       deliveryLocation: deliveryController.text.trim(),
-      reward: rewardValue,
-      rewardType: 'Argent',
-      status: CourseStatus.enAttente,
-      requesterName: requester,
-      runnerName: '',
+      rewardType: recompenseType,
+      rewardAmount: isMoney ? double.parse(rewardController.text.trim()) : null,
+      rewardDescription: isMoney
+          ? null
+          : rewardDescriptionController.text.trim(),
     );
-  }
-
-  void _goToRecap() {
-    if (!_validate()) return;
-    context.push('/recapitulatif', extra: _buildCourse());
   }
 
   Widget _buildLabel(String text) {
@@ -216,9 +213,7 @@ class _NouvelleCourseScreenState extends ConsumerState<NouvelleCourseScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: () => context.canPop()
-                        ? context.pop()
-                        : context.go('/dashboard'),
+                    onPressed: () => context.pop(),
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
                       color: AppColors.textPrimary,
@@ -252,9 +247,15 @@ class _NouvelleCourseScreenState extends ConsumerState<NouvelleCourseScreen> {
                   children: [
                     _buildLabel('TYPE DE COURSE'),
                     _buildTypeSelector(
-                      ['Cafétéria', 'Colis', 'Autre'],
-                      typeSelectionne,
-                      (v) => setState(() => typeSelectionne = v),
+                      [
+                        for (final category in CourseCategory.values)
+                          category.label,
+                      ],
+                      typeSelectionne.label,
+                      (v) => setState(
+                        () => typeSelectionne = CourseCategory.values
+                            .firstWhere((category) => category.label == v),
+                      ),
                     ),
                     const SizedBox(height: 20),
 
@@ -283,14 +284,38 @@ class _NouvelleCourseScreenState extends ConsumerState<NouvelleCourseScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    _buildLabel('RÉCOMPENSE'),
-                    _buildTextField(
-                      controller: rewardController,
-                      hint: '500',
-                      error: _rewardError,
-                      keyboardType: TextInputType.number,
-                      suffixText: 'FCFA',
+                    _buildLabel('TYPE DE RÉCOMPENSE'),
+                    _buildTypeSelector(
+                      [for (final type in RewardType.values) type.label],
+                      recompenseType.label,
+                      (v) => setState(() {
+                        recompenseType = RewardType.values.firstWhere(
+                          (type) => type.label == v,
+                        );
+                        _rewardError = null;
+                      }),
                     ),
+
+                    if (recompenseType == RewardType.nourriture) ...[
+                      const SizedBox(height: 16),
+                      _buildLabel('RÉCOMPENSE PROPOSÉE'),
+                      _buildTextField(
+                        controller: rewardDescriptionController,
+                        hint: 'Ex : un sandwich offert',
+                        error: _rewardError,
+                      ),
+                    ],
+                    if (recompenseType == RewardType.argent) ...[
+                      const SizedBox(height: 16),
+                      _buildLabel('MONTANT'),
+                      _buildTextField(
+                        controller: rewardController,
+                        hint: '500',
+                        error: _rewardError,
+                        keyboardType: TextInputType.number,
+                        suffixText: 'FCFA',
+                      ),
+                    ],
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -303,7 +328,11 @@ class _NouvelleCourseScreenState extends ConsumerState<NouvelleCourseScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _goToRecap,
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();
+                    if (!_validate()) return;
+                    context.push('/recapitulatif', extra: _buildDraft());
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.amber,
                     foregroundColor: AppColors.black,
